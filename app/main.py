@@ -5,9 +5,11 @@ from binascii import Error
 
 app = FastAPI()
 
-@app.get("/")
-async def root():
-    return "HELOO"
+
+@app.get("/b64")
+async def root(query: str) -> str:
+    return b64encode(query.encode()).decode()
+
 
 @app.get("/calculus")
 async def calculate(query: str, response: Response):
