@@ -1,5 +1,6 @@
 import operator
 from typing import List
+import re
 
 operators = {
     "+": operator.add,
@@ -9,7 +10,7 @@ operators = {
 }
 
 
-def check_query(query_in: str) -> bool:
+async def check_query(query_in: str) -> bool:
     """
     Validates the query string to ensure that a result can be found
 
@@ -49,8 +50,16 @@ def check_query(query_in: str) -> bool:
     return number_opening_brackets == number_closing_brackets
 
 
-def split_query(query_in: str) -> List[str]:
-    query_in = "".join(query_in.split())
+async def split_query(query_in: str) -> List[str]:
+    """
+    Takes in an input query and splits in up on brackets
+
+    Given an equation with parentheses, we want to solve the parenthesis part of the equation first. This function will
+    take in an equation in string form, and split it into brackets and non brackets -e.g.
+    1 + (4*5) + (1+2) ==> ["1 + ", "(4*5)", "(1+2)"]
+    :param query_in: The full equation in
+    :return: A list of the equation parts
+    """
     split = []
     current = ""
     inbracket = 0
@@ -69,6 +78,8 @@ def split_query(query_in: str) -> List[str]:
                 current += character
                 split.append(current)
                 current = ""
+            else:
+                current += character
         else:
             current += character
     if current:
@@ -77,24 +88,44 @@ def split_query(query_in: str) -> List[str]:
     return split
 
 
-def solve_query(query_in: str) -> float:
+async def clean_query(query_in: str) -> str:
     """
-    Takes a query and solves it
+    Takes in a query and removes whitespace, adds implicit multiplication signs
+    :param query_in: string holding the mathematical equation
+    :return: cleaned mathematical equation
+    """
+    query_in = "".join(query_in.split())
+    implicit_multiplication_operators = re.findall(r"\d\(", query_in)
+    for implicit_operator in implicit_multiplication_operators:
+        query_in = query_in.replace(implicit_operator, f"{implicit_operator[0]}*{implicit_operator[1]}")
+    return query_in
 
-    Assumes that the query is valid. Solves as follows:
-    1) Get all of the brackets and solve
-    2) Solve the resulting string
+
+async def solve_query(query_in: str) -> float:
+    """
+    Takes in an equation and solves it
+
+    Assumes that the euqation is valid - e.g that
+    1) The only characters in the equation are parenthesises, operators, and numbers.
+    2) That the equation has had any implicit multiplication signs added in
+
+    Solves as follows:
+    1) Get all of the brackets and solve each first
+    2) Split the string up and iterate over, solving multiplication and division parts of the equation
+    3) Iterate over the string again, solving the addition and subtraction parts
 
     :param query_in: The query in
     :return: The solved number
     """
-    query_in = "".join(query_in.split())
-    query_in = query_in.lstrip("(").rstrip(")")
-    res2 = split_query(query_in)
+
+    if query_in.startswith("("):
+        query_in = query_in[1:-1]
+
+    res2 = await split_query(query_in)
     new_r = []
     for r in res2:
         if r[0] == "(":
-            value = str(solve_query(r))
+            value = str(await solve_query(r))
         else:
             value = r
         new_r.append(value)
