@@ -6,11 +6,6 @@ from binascii import Error
 app = FastAPI()
 
 
-@app.get("/b64")
-async def root(query: str) -> str:
-    return b64encode(query.encode()).decode()
-
-
 @app.get("/calculus")
 async def calculate(query: str, response: Response):
     query_in = query
