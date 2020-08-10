@@ -142,6 +142,17 @@ async def test_check_query_with_nested_parenthesis_and_parenthesis_by_bracket():
     res = await solve_query(query)
     assert abs(35.104357698 - res) < 1e-7
 
+@pytest.mark.asyncio
+async def test_check_query_with_dot():
+    query = "4.5+2.3"
+    res = await check_query(query)
+    assert res is True
+
+@pytest.mark.asyncio
+async def test_check_query_with_bad_periods():
+    query =   "4.5.6 +2"
+    res = await check_query(query)
+    assert res is False
 
 if __name__ == "__main__":
     unittest.main()

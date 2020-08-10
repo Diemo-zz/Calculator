@@ -19,7 +19,7 @@ async def check_query(query_in: str) -> bool:
     If at a number, you are allowed a number, a operator or a bracket
     If you are at a bracket or operator, you are allowed a number only
     The number of opening brackets and closing brackets have to be the same
-    The only allowed characters are + - * / ( ) 1 2 3 4 5 6 7 8 9 0
+    The only allowed characters are + - * / ( ) 1 2 3 4 5 6 7 8 9 0 and .
 
     :param query_in: The query to evaluate
     :return: True/False
@@ -29,20 +29,26 @@ async def check_query(query_in: str) -> bool:
     previous_value = "+"  # You can always consider an equation x as 0 + x. As such, we always start on a +
     number_opening_brackets = 0
     number_closing_brackets = 0
+    left_of_digital_point = False
     for character in query_in:
-        if character.isdigit():  # digits can follow anything
+        if character.isdigit():
             if previous_value == ")":
-                return False  # We don't support bracket notation
+                return False  # We don't support bracket notation at this point
         elif character == "(":  # Brackets can only come after an operator
             number_opening_brackets += 1
             if previous_value not in allowed_operators:
                 return False
+        elif character == ".":
+            if left_of_digital_point or not previous_value.isdigit():
+                return False
+            left_of_digital_point = True
         elif character == ")":
             number_closing_brackets += 1
             if not (previous_value.isdigit() or previous_value == ")"):
                 return False
         elif character in allowed_operators:
-            if not (previous_value.isdigit() or previous_value in ["(", ")"]):
+            left_of_digital_point = False
+            if not (previous_value.isdigit() or previous_value in [")"]):
                 return False
         else:
             return False
@@ -95,7 +101,7 @@ async def clean_query(query_in: str) -> str:
     :return: cleaned mathematical equation
     """
     query_in = "".join(query_in.split())
-    implicit_multiplication_operators = re.findall(r"\d\(", query_in)
+    implicit_multiplication_operators = re.findall(r"\d\(", query_in) + re.findall(r"\)\d", query_in)
     for implicit_operator in implicit_multiplication_operators:
         query_in = query_in.replace(
             implicit_operator, f"{implicit_operator[0]}*{implicit_operator[1]}"
