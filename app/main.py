@@ -17,7 +17,7 @@ class ErrorResponse(BaseModel):
 
 
 @app.get("/calculus", response_model=Result, responses={400: {"model": ErrorResponse}})
-async def calculate(query: str, response: Response):
+async def calculate(query: str):
     query_in = query
     try:
         query = b64decode(query).decode("utf-8")
