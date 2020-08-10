@@ -97,7 +97,9 @@ async def clean_query(query_in: str) -> str:
     query_in = "".join(query_in.split())
     implicit_multiplication_operators = re.findall(r"\d\(", query_in)
     for implicit_operator in implicit_multiplication_operators:
-        query_in = query_in.replace(implicit_operator, f"{implicit_operator[0]}*{implicit_operator[1]}")
+        query_in = query_in.replace(
+            implicit_operator, f"{implicit_operator[0]}*{implicit_operator[1]}"
+        )
     return query_in
 
 
@@ -129,33 +131,29 @@ async def solve_query(query_in: str) -> float:
         else:
             value = r
         new_r.append(value)
-    res3 = "".join(new_r)
-    res3 = (
-        res3.replace("+", " + ")
-        .replace("-", " - ")
-        .replace("*", " * ")
-        .replace("/", " / ")
-    )
-    res4 = res3.split()
-    res5 = []
+    no_brackets_remaining = "".join(new_r)
+    for operator in operators.keys():
+        no_brackets_remaining = no_brackets_remaining.replace(operator, f" {operator} ")
+    split_into_numbers_and_operators = no_brackets_remaining.split()
     previous_value = "+"
-    for value in res4:
+    solved_mult_and_div_numbers_and_operators = []
+    for value in split_into_numbers_and_operators:
         if previous_value in ["*", "/"]:
-            previous_number = res5.pop()
+            previous_number = solved_mult_and_div_numbers_and_operators.pop()
             new_number = operators.get(previous_value)(
                 float(previous_number), float(value)
             )
-            res5.append(new_number)
+            solved_mult_and_div_numbers_and_operators.append(new_number)
         elif value not in ["*", "/"]:
-            res5.append(value)
+            solved_mult_and_div_numbers_and_operators.append(value)
         previous_value = value
 
-    res_iter = iter(res5)
-    initial_value = next(res_iter)
+    number_operator_iterator = iter(solved_mult_and_div_numbers_and_operators)
+    initial_value = next(number_operator_iterator)
     while True:
         try:
-            operator = next(res_iter)
-            second_value = next(res_iter)
+            operator = next(number_operator_iterator)
+            second_value = next(number_operator_iterator)
             initial_value = operators.get(operator)(
                 float(initial_value), float(second_value)
             )
