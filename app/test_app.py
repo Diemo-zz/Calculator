@@ -24,4 +24,16 @@ def test_bad_query():
     api_call = get_api_from_query(query)
     response = client.get(api_call)
     assert response.status_code == 400
-    assert "error" in response.json()
+
+
+def test_with_floats():
+    api_call = get_api_from_query("4.5+2.3")
+    response = client.get(api_call)
+    assert response.status_code == 200
+    assert response.json() == {"result": 6.8}
+
+
+def test_with_bad_floats():
+    api_call = get_api_from_query("4.5+6.4.5")
+    response = client.get(api_call)
+    assert response.status_code == 400
