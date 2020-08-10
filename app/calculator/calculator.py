@@ -101,7 +101,9 @@ async def clean_query(query_in: str) -> str:
     :return: cleaned mathematical equation
     """
     query_in = "".join(query_in.split())
-    implicit_multiplication_operators = re.findall(r"\d\(", query_in) + re.findall(r"\)\d", query_in)
+    implicit_multiplication_operators = re.findall(r"\d\(", query_in) + re.findall(
+        r"\)\d", query_in
+    )
     for implicit_operator in implicit_multiplication_operators:
         query_in = query_in.replace(
             implicit_operator, f"{implicit_operator[0]}*{implicit_operator[1]}"
