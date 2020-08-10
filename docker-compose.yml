@@ -16,12 +16,12 @@ services:
        - traefik.enable=true
        - traefik.docker.network=traefik-public
        - traefik.constraint-label=traefik-public
-       - traefik.http.routers.calculator.rule=Host(`futurice.diarmaiddeburca.de`)
+       - traefik.http.routers.calculator.rule=Host(`${HOST_SUBDOMAIN?Variable not set}`)
        - traefik.http.routers.calculator.entrypoints=http
        - traefik.http.routers.calculator.middlewares=https-redirect
        - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
        - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-       - traefik.http.routers.calculator-secured.rule=Host(`futurice.diarmaiddeburca.de`)
+       - traefik.http.routers.calculator-secured.rule=Host(`${HOST_SUBDOMAIN?Variable not set}`)
        - traefik.http.routers.calculator-secured.entrypoints=https
        - traefik.http.routers.calculator-secured.tls=true
        - traefik.http.routers.calculator-secured.tls.certresolver=le
