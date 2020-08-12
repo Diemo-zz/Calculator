@@ -1,12 +1,16 @@
 from .calculator.calculator import check_query, solve_query, clean_query
 from fastapi import FastAPI, Response, status
 from fastapi.responses import JSONResponse
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from binascii import Error
 from pydantic import BaseModel
 
 app = FastAPI()
 
+
+@app.get("/b64")
+async def root(query: str) -> str:
+    return b64encode(query.encode()).decode()
 
 class Result(BaseModel):
     result: float
