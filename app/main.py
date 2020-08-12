@@ -10,10 +10,12 @@ app = FastAPI()
 
 class Result(BaseModel):
     result: float
+    error: bool
 
 
 class ErrorResponse(BaseModel):
     message: str
+    error: bool
 
 
 @app.get("/calculus", response_model=Result, responses={400: {"model": ErrorResponse}})
@@ -24,12 +26,12 @@ async def calculate(query: str):
     except Error as e:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": f"Unable to decode the string {query}"},
+            content={"message": f"Unable to decode the string {query}", "error": True},
         )
     except UnicodeDecodeError as ue:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": f"{query} failed to be valid UTF-8"},
+            content={"message": f"{query} failed to be valid UTF-8", "error": True},
         )
     query = await clean_query(query)
     valid = await check_query(query)
@@ -37,9 +39,10 @@ async def calculate(query: str):
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={
-                "message": f"Invalid input string {query_in} - decoded to {query}"
+                "message": f"Invalid input string {query_in} - decoded to {query}",
+                "error": True
             },
         )
 
     result = await solve_query(query)
-    return {"result": result}
+    return {"result": result, "error": False}
