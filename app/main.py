@@ -12,6 +12,7 @@ app = FastAPI()
 async def root(query: str) -> str:
     return b64encode(query.encode()).decode()
 
+
 class Result(BaseModel):
     result: float
     error: bool
@@ -44,7 +45,7 @@ async def calculate(query: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             content={
                 "message": f"Invalid input string {query_in} - decoded to {query}",
-                "error": True
+                "error": True,
             },
         )
 
