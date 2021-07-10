@@ -115,7 +115,7 @@ async def solve_query(query_in: str) -> float:
     """
     Takes in an equation and solves it
 
-    Assumes that the euqation is valid - e.g that
+    Assumes that the equation is valid - e.g that
     1) The only characters in the equation are parenthesises, operators, and numbers.
     2) That the equation has had any implicit multiplication signs added in
 
@@ -131,17 +131,29 @@ async def solve_query(query_in: str) -> float:
     if query_in.startswith("("):
         query_in = query_in[1:-1]
 
-    res2 = await split_query(query_in)
-    new_r = []
-    for r in res2:
-        if r[0] == "(":
-            value = str(await solve_query(r))
-        else:
-            value = r
-        new_r.append(value)
-    no_brackets_remaining = "".join(new_r)
-    for operator in operators.keys():
-        no_brackets_remaining = no_brackets_remaining.replace(operator, f" {operator} ")
+    no_brackets_remaining = await solve_bracketed_sub_equations(query_in)
+    without_mult_and_divide = await solve_multication_and_division(no_brackets_remaining)
+
+    initial_value = await solve_plut_minus(without_mult_and_divide)
+    return initial_value
+
+
+async def solve_plut_minus(without_mult_and_divide):
+    number_operator_iterator = iter(without_mult_and_divide)
+    initial_value = next(number_operator_iterator)
+    while True:
+        try:
+            operator = next(number_operator_iterator)
+            second_value = next(number_operator_iterator)
+            initial_value = operators.get(operator)(
+                float(initial_value), float(second_value)
+            )
+        except StopIteration:
+            break
+    return initial_value
+
+
+async def solve_multication_and_division(no_brackets_remaining):
     split_into_numbers_and_operators = no_brackets_remaining.split()
     previous_value = "+"
     solved_mult_and_div_numbers_and_operators = []
@@ -155,16 +167,20 @@ async def solve_query(query_in: str) -> float:
         elif value not in ["*", "/"]:
             solved_mult_and_div_numbers_and_operators.append(value)
         previous_value = value
+    without_mult_and_divide = "".join(solved_mult_and_div_numbers_and_operators)
+    return without_mult_and_divide
 
-    number_operator_iterator = iter(solved_mult_and_div_numbers_and_operators)
-    initial_value = next(number_operator_iterator)
-    while True:
-        try:
-            operator = next(number_operator_iterator)
-            second_value = next(number_operator_iterator)
-            initial_value = operators.get(operator)(
-                float(initial_value), float(second_value)
-            )
-        except StopIteration:
-            break
-    return initial_value
+
+async def solve_bracketed_sub_equations(query_in):
+    res2 = await split_query(query_in)
+    new_r = []
+    for r in res2:
+        if r[0] == "(":
+            value = str(await solve_query(r))
+        else:
+            value = r
+        new_r.append(value)
+    no_brackets_remaining = "".join(new_r)
+    for operator in operators.keys():
+        no_brackets_remaining = no_brackets_remaining.replace(operator, f" {operator} ")
+    return no_brackets_remaining
