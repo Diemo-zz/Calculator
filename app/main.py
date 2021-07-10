@@ -23,12 +23,12 @@ async def calculate(query: str):
     query_in = query
     try:
         query = b64decode(query).decode("utf-8")
-    except Error as e:
+    except Error:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": f"Unable to decode the string {query}", "error": True},
         )
-    except UnicodeDecodeError as ue:
+    except UnicodeDecodeError:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"message": f"{query} failed to be valid UTF-8", "error": True},
