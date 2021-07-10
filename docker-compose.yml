@@ -8,8 +8,8 @@ services:
     networks:
       - traefik-public
     environment:
-      - SERVER_NAME=diarmaiddeburca.de
-      - SERVER_HOST=https://diarmaiddeburca.de
+      - SERVER_NAME=diarmaiddeburca.com
+      - SERVER_HOST=https://diarmaiddeburca.com
 
     deploy:
       labels:
