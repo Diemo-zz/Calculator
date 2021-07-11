@@ -1,11 +1,23 @@
 from calculator.calculator import check_query, solve_query, clean_query
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
 from base64 import b64decode
 from binascii import Error
 from pydantic import BaseModel
-from exceptions import exceptions
-app = FastAPI(exception_handlers=exceptions)
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.exception_handlers import http_exception_handler
+from exceptions import four_oh_four_not_found
+
+app = FastAPI()
+
+
+@app.exception_handler(StarletteHTTPException)
+async def my_custom_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        return four_oh_four_not_found(request, exc)
+    else:
+        # Just use FastAPI's built-in handler for other errors
+        return await http_exception_handler(request, exc)
 
 
 class Result(BaseModel):
