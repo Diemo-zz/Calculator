@@ -4,8 +4,8 @@ from fastapi.responses import JSONResponse
 from base64 import b64decode
 from binascii import Error
 from pydantic import BaseModel
-
-app = FastAPI()
+from exceptions import exceptions
+app = FastAPI(exception_handlers=exceptions)
 
 
 class Result(BaseModel):
