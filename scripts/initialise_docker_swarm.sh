@@ -13,5 +13,4 @@ export USERNAME=$USERNAME
 export EMAIL=diarmaiddeburca@gmail.com
 export TRAEFIK_SUBDOMAIN=traefik.diarmaiddeburca.com
 export HASHED_PASSWORD=$(openssl passwd -apr1 $PASSWORD)
-
 docker stack deploy -c app/traefik.yml traefik

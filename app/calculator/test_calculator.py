@@ -1,6 +1,14 @@
 import unittest
-from .calculator import check_query, solve_query, split_query, clean_query, solve_bracketed_sub_equations, solve_plus_minus, solve_multiplication_and_division
+from .calculator import (check_query, solve_query, split_query, clean_query, solve_bracketed_sub_equations,
+                         solve_plus_minus, solve_multiplication_and_division)
 import pytest
+
+
+@pytest.mark.asyncio
+async def test_solve_query_with_implicit_multiplication_of_two_bracketed_equations():
+    query = "1+(2+1)(6)"
+    res = await solve_query(query)
+    assert 19.0 - res < 1e-7
 
 
 @pytest.mark.asyncio
