@@ -7,9 +7,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - traefik-public
-    environment:
-      - SERVER_NAME=diarmaiddeburca.com
-      - SERVER_HOST=https://diarmaiddeburca.com
 
     deploy:
       labels:
