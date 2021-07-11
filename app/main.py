@@ -14,7 +14,7 @@ app = FastAPI()
 @app.exception_handler(StarletteHTTPException)
 async def my_custom_exception_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 404:
-        return four_oh_four_not_found(request, exc)
+        return await four_oh_four_not_found(request, exc)
     else:
         # Just use FastAPI's built-in handler for other errors
         return await http_exception_handler(request, exc)
