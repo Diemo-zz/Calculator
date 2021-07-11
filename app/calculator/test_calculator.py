@@ -1,6 +1,45 @@
 import unittest
-from .calculator import check_query, solve_query, split_query, clean_query
+from .calculator import check_query, solve_query, split_query, clean_query, solve_bracketed_sub_equations, solve_plus_minus, solve_multiplication_and_division
 import pytest
+
+
+@pytest.mark.asyncio
+async def test_solve_bracked_subequations_single_bracket():
+    query = "1+(1+1+1)+1"
+    new_query = await solve_bracketed_sub_equations(query)
+    expected = "1+3.0+1"
+    assert expected == new_query
+
+
+@pytest.mark.asyncio
+async def test_solve_bracked_subequations_nested_brackets():
+    query = "1+(1+1(1+1))+1"
+    new_query = await solve_bracketed_sub_equations(query)
+    expected = "1+3.0+1"
+    assert expected == new_query
+
+
+@pytest.mark.asyncio
+async def test_solve_multiplication_and_division_with_single_multiply():
+    query = "10*5+3"
+    expected_result = "50.0+3"
+    result = await solve_multiplication_and_division(query)
+    assert expected_result == result
+
+
+@pytest.mark.asyncio
+async def test_multiplication_and_division_for_single_division():
+    query = "10/2 +1"
+    expected_result = "5.0+1"
+    result = await solve_multiplication_and_division(query)
+    assert expected_result == result
+
+@pytest.mark.asyncio
+async def test_plus_minus_with_only_plus():
+    query = "2 + 3 + 4"
+    expected_result = 9.0
+    result = await solve_plus_minus(query)
+    assert expected_result == result
 
 
 @pytest.mark.asyncio
@@ -10,8 +49,6 @@ async def test_valid_query_with_plus():
     assert val is True
 
 
-# class MyTestCase(object):
-# class otherclass(unittest.TestCase):
 @pytest.mark.asyncio
 async def test_valid_query_with_minus():
     query = "1 - 2"

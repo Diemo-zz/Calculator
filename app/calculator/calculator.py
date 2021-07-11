@@ -97,6 +97,7 @@ async def split_query(query_in: str) -> List[str]:
 async def clean_query(query_in: str) -> str:
     """
     Takes in a query and removes whitespace, adds implicit multiplication signs
+    e.g. '6  +  1(  2 + 3     )' -> '6+1*(2+3)'
     :param query_in: string holding the mathematical equation
     :return: cleaned mathematical equation
     """
@@ -130,17 +131,25 @@ async def solve_query(query_in: str) -> float:
 
     if query_in.startswith("("):
         query_in = query_in[1:-1]
+    query_in = await clean_query(query_in)
 
     no_brackets_remaining = await solve_bracketed_sub_equations(query_in)
-    without_mult_and_divide = await solve_multication_and_division(no_brackets_remaining)
-
-    initial_value = await solve_plut_minus(without_mult_and_divide)
+    without_mult_and_divide = await solve_multiplication_and_division(no_brackets_remaining)
+    initial_value = await solve_plus_minus(without_mult_and_divide)
     return initial_value
 
 
-async def solve_plut_minus(without_mult_and_divide):
-    number_operator_iterator = iter(without_mult_and_divide)
-    initial_value = next(number_operator_iterator)
+async def solve_plus_minus(without_mult_and_divide: str) -> float:
+    """
+    Takes in an equation holding only numbers, and the plus and minus operators, and returns the result
+    :param without_mult_and_divide: Equation in
+    :return: result of solving the equation
+    """
+    for operator in operators:
+        without_mult_and_divide = without_mult_and_divide.replace(operator, f" {operator} ")
+    as_array = without_mult_and_divide.split()
+    number_operator_iterator = iter(as_array)
+    initial_value = float(next(number_operator_iterator))
     while True:
         try:
             operator = next(number_operator_iterator)
@@ -153,7 +162,17 @@ async def solve_plut_minus(without_mult_and_divide):
     return initial_value
 
 
-async def solve_multication_and_division(no_brackets_remaining):
+async def solve_multiplication_and_division(no_brackets_remaining: str) -> str:
+    """
+    Takes in a string holding an equation and solves the multiplication and division.
+
+    Assumes that the string has had all subequations solved before being passed in.
+
+    :param no_brackets_remaining: string holding the equation to be solved
+    :return: string holding the equation with the multiplication and division solved
+    """
+    for operator in operators:
+        no_brackets_remaining = no_brackets_remaining.replace(operator, f" {operator} ")
     split_into_numbers_and_operators = no_brackets_remaining.split()
     previous_value = "+"
     solved_mult_and_div_numbers_and_operators = []
@@ -167,20 +186,23 @@ async def solve_multication_and_division(no_brackets_remaining):
         elif value not in ["*", "/"]:
             solved_mult_and_div_numbers_and_operators.append(value)
         previous_value = value
-    without_mult_and_divide = "".join(solved_mult_and_div_numbers_and_operators)
+    without_mult_and_divide = "".join([str(r) for r in solved_mult_and_div_numbers_and_operators])
     return without_mult_and_divide
 
 
-async def solve_bracketed_sub_equations(query_in):
-    res2 = await split_query(query_in)
-    new_r = []
-    for r in res2:
-        if r[0] == "(":
-            value = str(await solve_query(r))
+async def solve_bracketed_sub_equations(query_in: str) -> str:
+    """
+    Takes in an equation, solves all of the subequations, and then returns the string holding the simplified equation
+    :param query_in: equation in
+    :return: string holding simplified equation
+    """
+    split_into_subequations = await split_query(query_in)
+    new_equation = []
+    for subequation in split_into_subequations:
+        if subequation[0] == "(":
+            value = await solve_query(subequation[1:-1])
         else:
-            value = r
-        new_r.append(value)
-    no_brackets_remaining = "".join(new_r)
-    for operator in operators.keys():
-        no_brackets_remaining = no_brackets_remaining.replace(operator, f" {operator} ")
+            value = subequation
+        new_equation.append(value)
+    no_brackets_remaining = "".join([str(r) for r in new_equation])
     return no_brackets_remaining

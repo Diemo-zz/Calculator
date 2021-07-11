@@ -1,4 +1,4 @@
-from calculator.calculator import check_query, solve_query, clean_query
+from .calculator.calculator import check_query, solve_query, clean_query
 from fastapi import FastAPI, Response, status
 from fastapi.responses import JSONResponse
 from base64 import b64decode
